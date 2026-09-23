@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://german-language-app-nine.vercel.app/sitemap.xml
