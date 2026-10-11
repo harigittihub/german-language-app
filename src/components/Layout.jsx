@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import FloatingWordsBackground from './FloatingWordsBackground';
@@ -8,6 +8,7 @@ import { usePractice } from '../context/PracticeContext';
 
 export default function Layout() {
   const { history, isHistoryOpen, setIsHistoryOpen, setHistory } = usePractice();
+  const location = useLocation();
 
   return (
     <div className="site-wrapper">
@@ -17,9 +18,11 @@ export default function Layout() {
       {/* Sticky Header with Logo, Nav, Stats */}
       <Header />
 
-      {/* Main Content Area */}
+      {/* Main Content Area with Smooth Route Transition */}
       <main className="main-layout-content">
-        <Outlet />
+        <div key={location.pathname} className="page-route-transition">
+          <Outlet />
+        </div>
       </main>
 
       {/* Shared Footer */}

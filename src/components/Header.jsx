@@ -18,7 +18,7 @@ export default function Header() {
       <Link to="/" className="brand-link" onClick={closeMobileMenu}>
         <div className="brand-container">
           <div className="brand-dot" />
-          <h1 className="brand-title">SPRECHEN (AI)</h1>
+          <h1 className="brand-title">SPRECHEN</h1>
         </div>
       </Link>
 
