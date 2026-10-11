@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import Header from './components/Header';
 import LevelSelector from './components/LevelSelector';
 import SentenceCard from './components/SentenceCard';
 import SpeechRecorder from './components/SpeechRecorder';
 import ValidationResult from './components/ValidationResult';
-import HistoryModal from './components/HistoryModal';
-import FloatingWordsBackground from './components/FloatingWordsBackground';
 
 import { SENTENCE_BANK } from './data/sentences';
 import { calculateSimilarity } from './utils/validationUtils';
+import { usePractice } from './context/PracticeContext';
 
 export default function App() {
   const [selectedLevel, setSelectedLevel] = useState('A1');
@@ -20,12 +18,13 @@ export default function App() {
   const [validationData, setValidationData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Stats & History
-  const [streak, setStreak] = useState(0);
-  const [totalAttempted, setTotalAttempted] = useState(0);
-  const [totalCorrect, setTotalCorrect] = useState(0);
-  const [history, setHistory] = useState([]);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  // Stats from Shared Context
+  const {
+    setStreak,
+    setTotalAttempted,
+    setTotalCorrect,
+    setHistory,
+  } = usePractice();
 
   // Pick a random sentence for the current level without repeating immediately
   const getRandomSentence = useCallback((level, currentUsedIds) => {
@@ -81,7 +80,7 @@ export default function App() {
       score,
       spoken: transcriptText,
       sentence: currentSentence,
-      direction: practiceDirection
+      direction: practiceDirection,
     };
 
     setValidationData(resultObj);
@@ -99,7 +98,7 @@ export default function App() {
       spoken: transcriptText,
       score,
       mode: practiceDirection,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
     setHistory((prev) => [historyEntry, ...prev]);
 
@@ -112,59 +111,38 @@ export default function App() {
   };
 
   return (
-    <div>
-      {/* Ambient Floating German Words in Background */}
-      <FloatingWordsBackground />
-
-      <Header 
-        streak={streak} 
-        totalAttempted={totalAttempted} 
-        totalCorrect={totalCorrect} 
-        onOpenHistory={() => setIsHistoryOpen(true)}
+    <div className="app-container">
+      {/* Minimalist Level & Mode Selector */}
+      <LevelSelector
+        selectedLevel={selectedLevel}
+        onSelectLevel={handleSelectLevel}
+        practiceDirection={practiceDirection}
+        onSelectDirection={handleSelectDirection}
       />
 
-      <div className="app-container">
-        {/* Minimalist Level & Mode Selector */}
-        <LevelSelector 
-          selectedLevel={selectedLevel}
-          onSelectLevel={handleSelectLevel}
+      {/* Sentence Prompt Card */}
+      <SentenceCard
+        sentence={currentSentence}
+        practiceDirection={practiceDirection}
+        onGenerateNew={handleGenerateNew}
+      />
+
+      {/* Speech Input & Recording or Validation Results */}
+      {!validationData ? (
+        <SpeechRecorder
           practiceDirection={practiceDirection}
-          onSelectDirection={handleSelectDirection}
+          onTranscriptReady={(text) => setSpokenTranscript(text)}
+          onSubmit={handleSubmitAnswer}
+          isProcessing={isProcessing}
         />
-
-        {/* Sentence Prompt Card */}
-        <SentenceCard 
-          sentence={currentSentence}
+      ) : (
+        <ValidationResult
+          spokenText={validationData.spoken}
+          expectedSentence={validationData.sentence}
           practiceDirection={practiceDirection}
-          onGenerateNew={handleGenerateNew}
-        />
-
-        {/* Speech Input & Recording or Validation Results */}
-        {!validationData ? (
-          <SpeechRecorder 
-            practiceDirection={practiceDirection}
-            onTranscriptReady={(text) => setSpokenTranscript(text)}
-            onSubmit={handleSubmitAnswer}
-            isProcessing={isProcessing}
-          />
-        ) : (
-          <ValidationResult 
-            spokenText={validationData.spoken}
-            expectedSentence={validationData.sentence}
-            practiceDirection={practiceDirection}
-            similarityScore={validationData.score}
-            onNextSentence={handleGenerateNew}
-            onRetry={handleRetry}
-          />
-        )}
-      </div>
-
-      {/* History Modal */}
-      {isHistoryOpen && (
-        <HistoryModal 
-          history={history}
-          onClose={() => setIsHistoryOpen(false)}
-          onClearHistory={() => setHistory([])}
+          similarityScore={validationData.score}
+          onNextSentence={handleGenerateNew}
+          onRetry={handleRetry}
         />
       )}
     </div>
