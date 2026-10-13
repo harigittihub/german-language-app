@@ -22,7 +22,7 @@ export default function Contact() {
             <p>Direct communication for suggestions, grammar corrections, or collaborations.</p>
             <a href="mailto:contact@sprechen-app.com" className="btn-primary contact-btn">
               <Mail size={16} />
-              <span>Email: contact@sprechen-app.com</span>
+              <span>Email: harikumar.ok2001@gmail.com</span>
             </a>
           </div>
         </div>

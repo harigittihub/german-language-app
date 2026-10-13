@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle2, RotateCcw, ArrowRight, Volume2, Sparkles, AlertTriangle, XCircle } from 'lucide-react';
 import { generateWordDiff, getFeedbackRating } from '../utils/validationUtils';
 import { speakText } from '../utils/ttsUtils';
+import Confetti from './Confetti';
 
 export default function ValidationResult({ 
   spokenText, 
@@ -16,12 +17,25 @@ export default function ValidationResult({
   const rating = getFeedbackRating(similarityScore);
   const wordDiff = generateWordDiff(spokenText, expectedText);
 
+  // Confetti burst on perfect score
+  const [showConfetti, setShowConfetti] = useState(false);
+  useEffect(() => {
+    if (similarityScore === 100) {
+      // Tiny delay so the card animates in first, then confetti fires
+      const t = setTimeout(() => setShowConfetti(true), 200);
+      return () => clearTimeout(t);
+    }
+    setShowConfetti(false);
+  }, [similarityScore]);
+
   const handleListenCorrect = () => {
     const lang = practiceDirection === 'DE_TO_EN' ? 'en-US' : 'de-DE';
     speakText(expectedText, lang, 1.0);
   };
 
   return (
+    <>
+      <Confetti active={showConfetti} />
     <div className="glass-card validation-card">
       <div className="feedback-header">
         <div>
@@ -99,5 +113,6 @@ export default function ValidationResult({
         </button>
       </div>
     </div>
+    </>
   );
 }
